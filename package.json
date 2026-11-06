@@ -6,7 +6,7 @@
   "style": "vibe-lightbox.css",
   "files": ["vibe-lightbox.js", "vibe-lightbox.css"],
   "keywords": ["lightbox", "gallery", "photo", "zoom", "pinch", "swipe", "viewer"],
-  "repository": { "type": "git", "url": "https://github.com/IvanMayorov/curtainbox.git" },
+  "repository": { "type": "git", "url": "https://github.com/IvanMayorov/vibe-lightbox.git" },
   "author": "Ivan Mayorov",
   "license": "MIT"
 }

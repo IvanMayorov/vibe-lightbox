@@ -1,7 +1,7 @@
 /*!
  * Vibe Lightbox — full-screen photo viewer: grows out of the thumbnail, pages with a curtain wipe, zooms and pans
  * with inertia, closes back into the thumbnail. No dependencies.
- * MIT License. https://github.com/IvanMayorov/curtainbox
+ * MIT License. https://github.com/IvanMayorov/vibe-lightbox
  *
  * Markup: <a data-lightbox="group" href="large.jpg"><img src="thumb.jpg" alt=""></a>. Links of one group page together.
  * VibeLightbox.init(options) starts listening for clicks on such links (see README for options).
