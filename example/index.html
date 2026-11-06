@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>curtainbox — пример</title>
+<link rel="stylesheet" href="../curtainbox.css">
+<style>
+    body { margin: 0; font: 16px/1.4 system-ui, sans-serif; color: #1d1d1f; background: #fafafa; }
+    main { max-width: 1100px; margin: 0 auto; padding: 40px 16px; }
+    h1 { margin: 0 0 8px; font-size: 24px; }
+    h2 { margin: 40px 0 16px; font-size: 18px; }
+    p { margin: 0 0 24px; color: #6e6e73; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+    .grid a { display: block; aspect-ratio: 1; background: #eee; }
+    .grid img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .single { display: block; width: 280px; height: 200px; background: #fff; border: 1px solid #e5e5ea; }
+    .single img { width: 100%; height: 100%; object-fit: contain; display: block; }
+</style>
+</head>
+<body>
+<main>
+    <h1>curtainbox</h1>
+    <p>Нажмите на фото. Листание — стрелки, ←/→, свайп; зум — щелчок, колесо, щипок; закрыть — Esc, крестик, «Назад», свайп вниз.</p>
+
+    <h2>Галерея</h2>
+    <div class="grid" id="gallery"></div>
+
+    <h2>Одно фото (object-fit: contain)</h2>
+    <a class="single" data-lightbox="single" href="https://picsum.photos/id/1043/2400/1600">
+        <img src="https://picsum.photos/id/1043/600/400" alt="Одно фото">
+    </a>
+</main>
+<script src="../curtainbox.js"></script>
+<script>
+    // Фото — с picsum.photos. Превью и большое фото одних пропорций (в сетке превью обрезано object-fit: cover)
+    var ids = [1015, 1016, 1018, 1019, 1021, 1025, 1035, 1039, 1040];
+    var gallery = document.getElementById('gallery');
+    ids.forEach(function (id, i) {
+        var a = document.createElement('a');
+        a.href = 'https://picsum.photos/id/' + id + '/2000/' + (i % 3 ? 1333 : 2500);
+        a.setAttribute('data-lightbox', 'gallery');
+        a.innerHTML = '<img src="https://picsum.photos/id/' + id + '/400/' + (i % 3 ? 267 : 500) + '" alt="Фото ' + (i + 1) + '" loading="lazy">';
+        gallery.appendChild(a);
+    });
+
+    Curtainbox.init({
+        labels: { dialog: 'Фото', close: 'Закрыть', prev: 'Предыдущее фото', next: 'Следующее фото', thumb: 'Фото {n}' },
+        onClose: function (e) { console.log('closed on', e.group, e.index); }
+    });
+</script>
+</body>
+</html>

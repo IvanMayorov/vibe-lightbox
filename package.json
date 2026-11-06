@@ -1,0 +1,12 @@
+{
+  "name": "curtainbox",
+  "version": "1.0.0",
+  "description": "Full-screen photo viewer: grows out of the thumbnail, pages with a curtain wipe, zoom and pan with inertia, folds back on close. No dependencies.",
+  "main": "curtainbox.js",
+  "style": "curtainbox.css",
+  "files": ["curtainbox.js", "curtainbox.css"],
+  "keywords": ["lightbox", "gallery", "photo", "zoom", "pinch", "swipe", "viewer"],
+  "repository": { "type": "git", "url": "https://github.com/IvanMayorov/curtainbox.git" },
+  "author": "Ivan Mayorov",
+  "license": "MIT"
+}

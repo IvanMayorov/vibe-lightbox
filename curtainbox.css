@@ -1,0 +1,114 @@
+/*!
+ * curtainbox — full-screen photo viewer. MIT License. https://github.com/IvanMayorov/curtainbox
+ * Colours, sizes and fonts are CSS variables on .curtainbox — override them on .curtainbox or :root.
+ */
+.curtainbox {
+    --curtainbox-z: 3000;
+    --curtainbox-bg: #fff;           /* backdrop */
+    --curtainbox-ink: #1d1d1f;       /* icons, active thumbnail frame, loading bar */
+    --curtainbox-muted: #6e6e73;     /* counter */
+    --curtainbox-faint: #c7c7cc;     /* disabled arrow */
+    --curtainbox-btn-bg: #fff;
+    --curtainbox-btn-hover-bg: #1d1d1f;
+    --curtainbox-btn-hover-ink: #fff;
+    --curtainbox-btn-size: 50px;
+    --curtainbox-shadow: 0 2px 10px rgba(0, 0, 0, .1);
+    --curtainbox-ring: 0 0 0 3px rgba(0, 113, 227, .45);
+    --curtainbox-placeholder: #f2f2f2; /* skeleton and empty thumbnail */
+    --curtainbox-radius: 6px;
+    --curtainbox-thumb: 64px;
+    --curtainbox-font: inherit;
+    --curtainbox-font-size: 14px;
+    --curtainbox-pad: 90px 96px 120px; /* room around the photo: top, sides, bottom (thumbnails) */
+
+    display: none; position: fixed; inset: 0; z-index: var(--curtainbox-z);
+    font-family: var(--curtainbox-font); -webkit-tap-highlight-color: transparent;
+}
+.curtainbox.is-open { display: block; }
+html.curtainbox-lock { overflow: hidden; }
+.curtainbox__bg { position: absolute; inset: 0; background: var(--curtainbox-bg); opacity: var(--curtainbox-fade, 1); animation: curtainbox-in .32s ease-out; }
+/* z-index: 0 — own stacking context: slides (z-index for the curtain) never rise above the buttons and thumbnails */
+.curtainbox__stage { position: absolute; inset: 0; z-index: 0; overflow: hidden; touch-action: none; }
+.curtainbox__track { position: relative; height: 100%; }
+/* Slides lie on top of each other (paging is a curtain wipe); the slide is the offsetParent the zoom is measured from */
+.curtainbox__slide { position: absolute; inset: 0; visibility: hidden; display: flex; align-items: center; justify-content: center; height: 100%; padding: var(--curtainbox-pad); box-sizing: border-box; }
+.curtainbox_single .curtainbox__slide { padding-bottom: 90px; }
+.curtainbox__img { display: block; max-width: 100%; max-height: 100%; transform-origin: center; user-select: none; -webkit-user-select: none; -webkit-user-drag: none; }
+/* While the large photo of the current slide loads — a thin running bar at the top (after .3 s, so cached photos show none).
+   No thumbnail yet — a grey skeleton in place of the photo. */
+.curtainbox.is-busy::after { content: ""; position: absolute; top: 0; left: 0; right: 0; z-index: 1; height: 2px; background: linear-gradient(90deg, transparent, var(--curtainbox-ink), transparent) no-repeat; background-size: 30% 100%; animation: curtainbox-busy 1.2s .3s linear infinite both; }
+@keyframes curtainbox-busy {
+    from { background-position: -50% 0; }
+    to { background-position: 150% 0; }
+}
+.curtainbox__slide.is-empty::before { content: ""; position: absolute; inset: 0; width: min(100% - 192px, 100dvh - 210px); aspect-ratio: 1; margin: auto; border-radius: var(--curtainbox-radius); background: linear-gradient(90deg, var(--curtainbox-placeholder) 25%, var(--curtainbox-bg) 50%, var(--curtainbox-placeholder) 75%) 0 0 / 200% 100%; animation: curtainbox-skeleton 1.4s linear infinite; }
+.curtainbox__slide.is-empty .curtainbox__img { opacity: 0; }
+@keyframes curtainbox-skeleton { to { background-position: -200% 0; } }
+/* Cursor: whole photo — magnifier (a click zooms in), zoomed — hand (can be dragged), while dragging — closed hand */
+.curtainbox.is-zoomable .curtainbox__img { cursor: zoom-in; }
+.curtainbox.is-zoomed .curtainbox__img { cursor: grab; }
+.curtainbox.is-grabbing .curtainbox__img { cursor: grabbing; }
+
+.curtainbox__counter,
+.curtainbox__btn,
+.curtainbox__thumbs { animation: curtainbox-in .32s ease-out; transition: opacity .25s; }
+.curtainbox.is-closing .curtainbox__bg,
+.curtainbox.is-closing .curtainbox__counter,
+.curtainbox.is-closing .curtainbox__btn,
+.curtainbox.is-closing .curtainbox__thumbs { opacity: 0; transition: opacity .32s; }
+
+.curtainbox__counter { position: absolute; top: 20px; left: 24px; line-height: var(--curtainbox-btn-size); color: var(--curtainbox-muted); font-size: var(--curtainbox-font-size); }
+
+.curtainbox__btn { position: absolute; width: var(--curtainbox-btn-size); height: var(--curtainbox-btn-size); padding: 0; border: 0; border-radius: 50%; background: var(--curtainbox-btn-bg); box-shadow: var(--curtainbox-shadow); color: var(--curtainbox-ink); cursor: pointer; transition: background-color .3s ease-in-out, color .3s ease-in-out, opacity .25s; }
+.curtainbox__btn svg { position: absolute; left: 50%; top: 50%; width: 17px; height: 17px; transform: translate(-50%, -50%); pointer-events: none; }
+.curtainbox__btn:focus-visible { box-shadow: var(--curtainbox-ring); outline: none; }
+.curtainbox__btn:disabled { color: var(--curtainbox-faint); cursor: default; }
+@media (hover: hover) {
+    .curtainbox__btn:not(:disabled):hover { background: var(--curtainbox-btn-hover-bg); color: var(--curtainbox-btn-hover-ink); }
+}
+.curtainbox__btn_close { top: 20px; right: 20px; }
+.curtainbox__btn_close svg { width: 22px; height: 22px; }
+.curtainbox__btn_prev,
+.curtainbox__btn_next { top: 50%; margin-top: calc(var(--curtainbox-btn-size) / -2); }
+.curtainbox__btn_prev { left: 20px; }
+.curtainbox__btn_next { right: 20px; }
+.curtainbox__btn_prev svg { transform: translate(-50%, -50%) rotate(180deg); }
+.curtainbox_single .curtainbox__btn_prev,
+.curtainbox_single .curtainbox__btn_next,
+.curtainbox_single .curtainbox__counter,
+.curtainbox_single .curtainbox__thumbs { display: none; }
+
+/* Thumbnails — a centred row at the bottom, the active one framed */
+.curtainbox__thumbs { position: absolute; left: 0; right: 0; bottom: 24px; display: flex; gap: 8px; padding: 0 20px; overflow-x: auto; scrollbar-width: none; }
+.curtainbox__thumbs::-webkit-scrollbar { display: none; }
+/* Centred, and scrolled from the start when they do not fit (justify-content: center would cut off the left ones) */
+.curtainbox__thumb:first-child { margin-left: auto; }
+.curtainbox__thumb:last-child { margin-right: auto; }
+.curtainbox__thumb { flex: 0 0 var(--curtainbox-thumb); height: var(--curtainbox-thumb); padding: 0; border: 1px solid transparent; border-radius: var(--curtainbox-radius); background: var(--curtainbox-placeholder) center / cover no-repeat; opacity: .6; cursor: pointer; transition: opacity .2s, border-color .2s; }
+.curtainbox__thumb.is-active { border-color: var(--curtainbox-ink); opacity: 1; }
+.curtainbox__thumb:focus-visible { box-shadow: var(--curtainbox-ring); outline: none; }
+@media (hover: hover) {
+    .curtainbox__thumb:hover { opacity: 1; }
+}
+
+@keyframes curtainbox-in { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+    .curtainbox.is-busy::after,
+    .curtainbox__slide.is-empty::before,
+    .curtainbox__bg,
+    .curtainbox__counter,
+    .curtainbox__btn,
+    .curtainbox__thumbs { animation: none; }
+}
+
+/* Phone: photo full width, paged by swipe; no arrows, smaller thumbnails */
+@media screen and (max-width: 767px) {
+    .curtainbox { --curtainbox-btn-size: 44px; --curtainbox-thumb: 52px; --curtainbox-pad: 72px 0 100px; }
+    .curtainbox_single .curtainbox__slide { padding: 72px 0; }
+    .curtainbox__slide.is-empty::before { width: min(100%, 100dvh - 172px); border-radius: 0; }
+    .curtainbox__counter { top: 12px; left: 16px; }
+    .curtainbox__btn_close { top: 12px; right: 12px; }
+    .curtainbox__btn_prev,
+    .curtainbox__btn_next { display: none; }
+    .curtainbox__thumbs { bottom: max(16px, env(safe-area-inset-bottom)); gap: 6px; padding: 0 16px; }
+}
