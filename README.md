@@ -2,6 +2,8 @@
 
 Просмотр фото на весь экран: фото вырастает из превью и сворачивается обратно, листается шторкой, увеличивается и тянется с инерцией. Без зависимостей: один файл JS и один CSS, ~16 КБ в gzip вместе с комментариями.
 
+Демо: https://ivanmayorov.github.io/curtainbox/
+
 *A full-screen photo viewer: the photo grows out of its thumbnail and folds back into it, pages with a curtain wipe, zooms and pans with inertia. No dependencies.*
 
 ## Что умеет
