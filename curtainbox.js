@@ -185,6 +185,18 @@
 			draw(img, zoom);
 			zoom = { scale: 1, x: 0, y: 0 };
 			applyZoom(true);
+			// A thumbnail cropped by object-fit: cover — the photo starts cropped the same way and the crop opens up.
+			if (from.clip) {
+				var t0 = performance.now(), s0 = slides[index];
+				crop(img, from.clip, 1);
+				(function step(now) {
+					if (closing) return;
+					if (!opened || slides[index] !== s0) { crop(img); return; }
+					var k = Math.min(1, (now - t0) / DURATION);
+					crop(img, from.clip, Math.pow(1 - k, 3));
+					if (k < 1) requestAnimationFrame(step);
+				})(t0);
+			}
 		}
 		setTimeout(function () { closeBtn.focus({ preventScroll: true }); }, DURATION);
 		if (opts.onOpen) opts.onOpen(info());
@@ -223,7 +235,7 @@
 		// otherwise non-square photos jumped in size at the end.
 		var land = (frame === link && landing(link, slides[index].ratio)) || to;
 		var target = visible
-			? { scale: land.width / img.offsetWidth, x: land.left + land.width / 2 - c.x, y: land.top + land.height / 2 - c.y, o: 1 }
+			? { scale: land.width / img.offsetWidth, x: land.left + land.width / 2 - c.x, y: land.top + land.height / 2 - c.y, o: 1, clip: land.clip }
 			: { scale: from.scale * .92, x: from.x, y: from.y + (from.y > 0 ? 80 : from.y < 0 ? -80 : 0), o: 0 };
 		var start = performance.now();
 		boost(img);
@@ -232,6 +244,7 @@
 			var e = 1 - Math.pow(1 - k, 3);
 			draw(img, { scale: from.scale + (target.scale - from.scale) * e, x: from.x + (target.x - from.x) * e, y: from.y + (target.y - from.y) * e });
 			img.style.opacity = 1 + (target.o - 1) * e;
+			crop(img, target.clip, e);
 			anim = k < 1 ? requestAnimationFrame(step) : 0;
 		})(start);
 		setTimeout(function () {
@@ -247,8 +260,8 @@
 		}, DURATION);
 	}
 
-	// The rectangle the thumbnail image occupies on the page, taking object-fit (contain / scale-down; cover is not cropped)
-	// and object-position into account.
+	// The rectangle the thumbnail image occupies on the page, taking object-fit (contain / scale-down / cover)
+	// and object-position into account. For cover it is the whole uncropped photo, plus `clip` — the part the box cuts off.
 	function landing(link, ratio) {
 		var pic = link.querySelector('img');
 		if (!pic || !ratio) return null;
@@ -256,12 +269,26 @@
 		if (!r.width || !r.height) return null;
 		var cs = getComputedStyle(pic);
 		var fit = cs.objectFit;
-		if (fit !== 'contain' && fit !== 'scale-down') return r;
-		var w = Math.min(r.width, r.height * ratio);
+		if (fit !== 'contain' && fit !== 'scale-down' && fit !== 'cover') return r;
+		var w = fit === 'cover' ? Math.max(r.width, r.height * ratio) : Math.min(r.width, r.height * ratio);
 		if (fit === 'scale-down') w = Math.min(w, pic.naturalWidth || w);
 		var h = w / ratio;
 		var pos = cs.objectPosition.split(' ');
-		return { left: r.left + offset(pos[0], r.width - w), top: r.top + offset(pos[1] || pos[0], r.height - h), width: w, height: h };
+		var land = { left: r.left + offset(pos[0], r.width - w), top: r.top + offset(pos[1] || pos[0], r.height - h), width: w, height: h };
+		// cover — the photo is larger than the box and cropped by it: remember the crop as shares of the photo
+		// (top, right, bottom, left) and the corner radius in px of the photo, so the transition crops the photo the same way.
+		if (fit === 'cover') land.clip = {
+			t: (r.top - land.top) / h, r: (land.left + w - r.right) / w, b: (land.top + h - r.bottom) / h, l: (r.left - land.left) / w,
+			radius: (parseFloat(cs.borderTopLeftRadius) || 0) / w
+		};
+		return land;
+	}
+	// Crop the photo like the thumbnail: share e (0…1) of the crop c from landing(). Insets are in px of the photo before transform.
+	function crop(img, c, e) {
+		if (!c || !e) { img.style.clipPath = ''; return; }
+		var W = img.offsetWidth, H = img.offsetHeight;
+		img.style.clipPath = 'inset(' + c.t * H * e + 'px ' + c.r * W * e + 'px ' + c.b * H * e + 'px ' + c.l * W * e + 'px' +
+			(c.radius ? ' round ' + c.radius * W * e + 'px' : '') + ')';
 	}
 	// Offset by object-position: percentages are a share of the free space, pixels as they are.
 	function offset(value, free) {

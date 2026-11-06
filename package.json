@@ -1,6 +1,6 @@
 {
   "name": "curtainbox",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Full-screen photo viewer: grows out of the thumbnail, pages with a curtain wipe, zoom and pan with inertia, folds back on close. No dependencies.",
   "main": "curtainbox.js",
   "style": "curtainbox.css",
