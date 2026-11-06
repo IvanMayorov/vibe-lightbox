@@ -1,4 +1,4 @@
-# curtainbox
+# Vibe Lightbox
 
 Просмотр фото на весь экран: фото вырастает из превью и сворачивается обратно, листается шторкой, увеличивается и тянется с инерцией. Без зависимостей: один файл JS и один CSS, ~16 КБ в gzip вместе с комментариями.
 
@@ -21,11 +21,11 @@
 ## Подключение
 
 ```html
-<link rel="stylesheet" href="curtainbox.css">
-<script src="curtainbox.js"></script>
+<link rel="stylesheet" href="vibe-lightbox.css">
+<script src="vibe-lightbox.js"></script>
 ```
 
-Или через сборщик: `require('curtainbox')` / `import Curtainbox from 'curtainbox'` (UMD).
+Или через сборщик: `require('vibe-lightbox')` / `import VibeLightbox from 'vibe-lightbox'` (UMD).
 
 ## Разметка
 
@@ -37,7 +37,7 @@
 ```
 
 ```js
-Curtainbox.init();
+VibeLightbox.init();
 ```
 
 Превью и большое фото должны быть одних пропорций: по превью окно сразу рассчитывает размер фото. Обрезать превью на странице через `object-fit: cover` можно: фото открывается из обрезанного превью и при закрытии обрезается так же, с учётом скругления углов.
@@ -47,7 +47,7 @@ Curtainbox.init();
 ## Параметры
 
 ```js
-Curtainbox.init({
+VibeLightbox.init({
   labels: { dialog: 'Фото', close: 'Закрыть', prev: 'Предыдущее фото', next: 'Следующее фото', thumb: 'Фото {n}' }
 });
 ```
@@ -63,30 +63,30 @@ Curtainbox.init({
 | `onOpen(info)` | — | окно открылось |
 | `onClose(info)` | — | окно начало закрываться, `info` — `{ group, index, link }`. Если здесь пролистать галерею на странице к этому фото, оно свернётся прямо в неё |
 
-То же, что `onClose`, приходит событием `curtainbox:close` на `document` (`event.detail`).
+То же, что `onClose`, приходит событием `vibe-lightbox:close` на `document` (`event.detail`).
 
 ## Методы
 
-- `Curtainbox.open('gallery', 2)` — открыть третье фото группы; `Curtainbox.open(link)` — открыть с этой ссылки;
+- `VibeLightbox.open('gallery', 2)` — открыть третье фото группы; `VibeLightbox.open(link)` — открыть с этой ссылки;
 - `close()`, `next()`, `prev()`, `goTo(i)`, `isOpen()`;
 - `destroy()` — снять обработчики и убрать окно со страницы.
 
 ## Стили
 
-Цвета и размеры — CSS-переменные на `.curtainbox`, их можно переопределить:
+Цвета и размеры — CSS-переменные на `.vibe-lightbox`, их можно переопределить:
 
 ```css
-.curtainbox {
-  --curtainbox-bg: #111;
-  --curtainbox-ink: #fff;
-  --curtainbox-btn-bg: #222;
-  --curtainbox-btn-hover-bg: #e30613;
+.vibe-lightbox {
+  --vibe-lightbox-bg: #111;
+  --vibe-lightbox-ink: #fff;
+  --vibe-lightbox-btn-bg: #222;
+  --vibe-lightbox-btn-hover-bg: #e30613;
 }
 ```
 
-Основные: `--curtainbox-bg` (фон), `--curtainbox-ink` (значки, рамка активной миниатюры, полоска загрузки), `--curtainbox-muted` (счётчик), `--curtainbox-btn-bg`, `--curtainbox-btn-hover-bg`, `--curtainbox-btn-hover-ink`, `--curtainbox-btn-size`, `--curtainbox-thumb`, `--curtainbox-radius`, `--curtainbox-pad` (поля вокруг фото), `--curtainbox-z`, `--curtainbox-font`. Полный список — в начале `curtainbox.css`.
+Основные: `--vibe-lightbox-bg` (фон), `--vibe-lightbox-ink` (значки, рамка активной миниатюры, полоска загрузки), `--vibe-lightbox-muted` (счётчик), `--vibe-lightbox-btn-bg`, `--vibe-lightbox-btn-hover-bg`, `--vibe-lightbox-btn-hover-ink`, `--vibe-lightbox-btn-size`, `--vibe-lightbox-thumb`, `--vibe-lightbox-radius`, `--vibe-lightbox-pad` (поля вокруг фото), `--vibe-lightbox-z`, `--vibe-lightbox-font`. Полный список — в начале `vibe-lightbox.css`.
 
-Пока окно открыто, у `<html>` класс `curtainbox-lock` (`overflow: hidden`): страница под окном не прокручивается.
+Пока окно открыто, у `<html>` класс `vibe-lightbox-lock` (`overflow: hidden`): страница под окном не прокручивается.
 
 ## Браузеры
 

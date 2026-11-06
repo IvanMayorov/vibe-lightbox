@@ -1,10 +1,10 @@
 /*!
- * curtainbox — full-screen photo viewer: grows out of the thumbnail, pages with a curtain wipe, zooms and pans
+ * Vibe Lightbox — full-screen photo viewer: grows out of the thumbnail, pages with a curtain wipe, zooms and pans
  * with inertia, closes back into the thumbnail. No dependencies.
  * MIT License. https://github.com/IvanMayorov/curtainbox
  *
  * Markup: <a data-lightbox="group" href="large.jpg"><img src="thumb.jpg" alt=""></a>. Links of one group page together.
- * Curtainbox.init(options) starts listening for clicks on such links (see README for options).
+ * VibeLightbox.init(options) starts listening for clicks on such links (see README for options).
  *
  * - The photo grows out of the thumbnail and folds back into it; the thumbnail stays on screen until the large photo loads.
  * - Opens with a click or a two-finger spread on the thumbnail.
@@ -13,11 +13,11 @@
  *   A zoomed photo is dragged with inertia and springs back at the edges.
  * - Closing: close button, Esc, click on the backdrop, browser Back (the viewer has its own #group-N address),
  *   swipe up or down on touch.
- * - Event 'curtainbox:close' on document (detail: {group, index, link}) at the start of closing.
+ * - Event 'vibe-lightbox:close' on document (detail: {group, index, link}) at the start of closing.
  */
 (function (root, factory) {
 	if (typeof module === 'object' && module.exports) module.exports = factory();
-	else root.Curtainbox = factory();
+	else root.VibeLightbox = factory();
 })(typeof self !== 'undefined' ? self : this, function () {
 	'use strict';
 
@@ -61,7 +61,7 @@
 		arrow: '<path d="M4 12h16M14 6l6 6-6 6"/>'
 	};
 	function button(cls, label, icon) {
-		var b = el('button', 'curtainbox__btn ' + cls,
+		var b = el('button', 'vibe-lightbox__btn ' + cls,
 			'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICONS[icon] + '</svg>');
 		b.type = 'button';
 		b.setAttribute('aria-label', label);
@@ -82,24 +82,24 @@
 	}
 
 	function build() {
-		box = el('div', 'curtainbox');
+		box = el('div', 'vibe-lightbox');
 		box.setAttribute('role', 'dialog');
 		box.setAttribute('aria-modal', 'true');
 		box.setAttribute('aria-label', opts.labels.dialog);
-		box.appendChild(el('div', 'curtainbox__bg'));
-		var stage = el('div', 'curtainbox__stage');
-		track = el('div', 'curtainbox__track');
+		box.appendChild(el('div', 'vibe-lightbox__bg'));
+		var stage = el('div', 'vibe-lightbox__stage');
+		track = el('div', 'vibe-lightbox__track');
 		stage.appendChild(track);
 		box.appendChild(stage);
-		counter = el('div', 'curtainbox__counter');
+		counter = el('div', 'vibe-lightbox__counter');
 		box.appendChild(counter);
-		closeBtn = button('curtainbox__btn_close', opts.labels.close, 'close');
-		prevBtn = button('curtainbox__btn_prev', opts.labels.prev, 'arrow');
-		nextBtn = button('curtainbox__btn_next', opts.labels.next, 'arrow');
+		closeBtn = button('vibe-lightbox__btn_close', opts.labels.close, 'close');
+		prevBtn = button('vibe-lightbox__btn_prev', opts.labels.prev, 'arrow');
+		nextBtn = button('vibe-lightbox__btn_next', opts.labels.next, 'arrow');
 		box.appendChild(closeBtn);
 		box.appendChild(prevBtn);
 		box.appendChild(nextBtn);
-		thumbsBox = el('div', 'curtainbox__thumbs');
+		thumbsBox = el('div', 'vibe-lightbox__thumbs');
 		box.appendChild(thumbsBox);
 
 		closeBtn.addEventListener('click', function () { requestClose(); });
@@ -139,8 +139,8 @@
 		track.innerHTML = '';
 		thumbsBox.innerHTML = '';
 		slides = links.map(function (link) {
-			var slide = el('div', 'curtainbox__slide');
-			var img = el('img', 'curtainbox__img');
+			var slide = el('div', 'vibe-lightbox__slide');
+			var img = el('img', 'vibe-lightbox__img');
 			img.alt = (link.querySelector('img') || {}).alt || '';
 			img.src = previewSrc(link);
 			img.draggable = false;
@@ -159,7 +159,7 @@
 			return s;
 		});
 		thumbs = links.length > 1 ? links.map(function (link, i) {
-			var t = el('button', 'curtainbox__thumb');
+			var t = el('button', 'vibe-lightbox__thumb');
 			t.type = 'button';
 			t.setAttribute('aria-label', opts.labels.thumb.replace('{n}', i + 1));
 			t.style.backgroundImage = 'url("' + previewSrc(link).replace(/["\\]/g, '\\$&') + '")';
@@ -167,9 +167,9 @@
 			thumbsBox.appendChild(t);
 			return t;
 		}) : [];
-		box.classList.toggle('curtainbox_single', links.length < 2);
+		box.classList.toggle('vibe-lightbox_single', links.length < 2);
 
-		document.documentElement.classList.add('curtainbox-lock');
+		document.documentElement.classList.add('vibe-lightbox-lock');
 		box.classList.add('is-open');
 		slides.forEach(fit);
 		stack();
@@ -205,7 +205,7 @@
 	// Closing from the viewer goes through history.back() so the history does not pile up; the close itself is in popstate.
 	function requestClose() {
 		if (!opened || closing) return;
-		if (opts.hash && history.state && history.state.curtainbox) history.back();
+		if (opts.hash && history.state && history.state.vibeLightbox) history.back();
 		else close();
 	}
 
@@ -217,7 +217,7 @@
 		var link = links[index];
 		var detail = info();
 		// Let the page react first (e.g. a gallery switches to this photo), then measure where to fold into.
-		document.dispatchEvent(new CustomEvent('curtainbox:close', { detail: detail }));
+		document.dispatchEvent(new CustomEvent('vibe-lightbox:close', { detail: detail }));
 		if (opts.onClose) opts.onClose(detail);
 		var frame = (opts.frame && opts.frame(link)) || link;
 		var to = frame.getBoundingClientRect();
@@ -249,11 +249,11 @@
 		})(start);
 		setTimeout(function () {
 			stopAnim();
-			box.style.removeProperty('--curtainbox-fade');
+			box.style.removeProperty('--vibe-lightbox-fade');
 			zoom = { scale: 1, x: 0, y: 0 };
 			shown = { scale: 1, x: 0, y: 0 };
 			box.classList.remove('is-open', 'is-closing', 'is-zoomable', 'is-zoomed', 'is-busy', 'is-grabbing');
-			document.documentElement.classList.remove('curtainbox-lock');
+			document.documentElement.classList.remove('vibe-lightbox-lock');
 			track.innerHTML = '';
 			opened = false;
 			closing = false;
@@ -390,7 +390,7 @@
 		shown = { scale: zoom.scale, x: 0, y: 0 };
 		update();
 		load(index);
-		if (opts.hash && history.state && history.state.curtainbox) history.replaceState(history.state, '', '#' + group + '-' + (index + 1));
+		if (opts.hash && history.state && history.state.vibeLightbox) history.replaceState(history.state, '', '#' + group + '-' + (index + 1));
 		curtainTo(c, 1, function () { stack(); updateCursor(); });
 	}
 
@@ -736,7 +736,7 @@
 			var a = pointers[ids[0]], b = pointers[ids[1]];
 			// The first finger already dragged the curtain or the photo down — put them back, or the pinch starts shifted.
 			if (gesture && gesture.type === 'swipe') stack();
-			if (gesture && gesture.type === 'dismiss') box.style.removeProperty('--curtainbox-fade');
+			if (gesture && gesture.type === 'dismiss') box.style.removeProperty('--vibe-lightbox-fade');
 			applyZoom(false);
 			// Everything is measured from the pinch start, not from the previous frame: otherwise resistance past the edge
 			// accumulated every frame and the photo bounced at the zoom limit.
@@ -790,7 +790,7 @@
 			swipeTo(dx);
 		} else if (gesture.type === 'dismiss') {
 			draw(slides[index].img, { scale: 1, x: 0, y: dy });
-			box.style.setProperty('--curtainbox-fade', Math.max(0, 1 - Math.abs(dy) / 400));
+			box.style.setProperty('--vibe-lightbox-fade', Math.max(0, 1 - Math.abs(dy) / 400));
 		}
 	}
 
@@ -813,7 +813,7 @@
 		if (!g.moved) {
 			if (e.type === 'pointercancel') return;
 			if (g.stopped && g.touch) { settle(); return; } // the tap stopped inertia — nothing more
-			if (g.target.classList.contains('curtainbox__img')) {
+			if (g.target.classList.contains('vibe-lightbox__img')) {
 				// Finger — double tap: zoom to the tap point or back to the whole photo; a single tap does nothing.
 				// Mouse — click in steps ×2, ×4… up to natural size.
 				if (g.touch) {
@@ -850,7 +850,7 @@
 			if (Math.abs(dy) > 120 || (fast && Math.abs(dy) > 40)) {
 				requestClose();
 			} else {
-				box.style.removeProperty('--curtainbox-fade');
+				box.style.removeProperty('--vibe-lightbox-fade');
 				zoom = { scale: 1, x: 0, y: 0 };
 				applyZoom(true);
 			}
@@ -885,7 +885,7 @@
 		var name = link.getAttribute(opts.attribute);
 		var i = groupLinks(name).indexOf(link);
 		if (i < 0) return;
-		if (opts.hash) history.pushState({ curtainbox: true }, '', '#' + name + '-' + (i + 1));
+		if (opts.hash) history.pushState({ vibeLightbox: true }, '', '#' + name + '-' + (i + 1));
 		open(name, i, animate !== false);
 	}
 
@@ -939,7 +939,7 @@
 		if (!document.querySelector(selector(name))) return;
 		// Underneath the viewer — the same page without the hash, so Back and the close button close it instead of leaving.
 		history.replaceState(null, '', location.pathname + location.search);
-		history.pushState({ curtainbox: true }, '', m[0]);
+		history.pushState({ vibeLightbox: true }, '', m[0]);
 		open(name, +m[2] - 1, false);
 	}
 
@@ -997,7 +997,7 @@
 				var name = String(target), list = groupLinks(name);
 				if (!list.length) return;
 				var i = Math.max(0, Math.min(start || 0, list.length - 1));
-				if (opts.hash) history.pushState({ curtainbox: true }, '', '#' + name + '-' + (i + 1));
+				if (opts.hash) history.pushState({ vibeLightbox: true }, '', '#' + name + '-' + (i + 1));
 				open(name, i, true);
 			}
 		},
@@ -1011,7 +1011,7 @@
 			if (opened) {
 				opened = false;
 				closing = false;
-				document.documentElement.classList.remove('curtainbox-lock');
+				document.documentElement.classList.remove('vibe-lightbox-lock');
 			}
 			stopAnim();
 			cancelAnimationFrame(curtainAnim);

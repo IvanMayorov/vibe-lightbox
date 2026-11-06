@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>curtainbox — пример</title>
-<link rel="stylesheet" href="../curtainbox.css">
+<title>Vibe Lightbox — пример</title>
+<link rel="stylesheet" href="../vibe-lightbox.css">
 <style>
     body { margin: 0; font: 16px/1.4 system-ui, sans-serif; color: #1d1d1f; background: #fafafa; }
     main { max-width: 1100px; margin: 0 auto; padding: 40px 16px; }
@@ -20,7 +20,7 @@
 </head>
 <body>
 <main>
-    <h1>curtainbox</h1>
+    <h1>Vibe Lightbox</h1>
     <p>Нажмите на фото. Листание — стрелки, ←/→, свайп; зум — щелчок, колесо, щипок; закрыть — Esc, крестик, «Назад», свайп вниз.</p>
 
     <h2>Галерея</h2>
@@ -31,7 +31,7 @@
         <img src="https://picsum.photos/id/1043/600/400" alt="Одно фото">
     </a>
 </main>
-<script src="../curtainbox.js"></script>
+<script src="../vibe-lightbox.js"></script>
 <script>
     // Фото — с picsum.photos. Превью и большое фото одних пропорций (в сетке превью обрезано object-fit: cover)
     var ids = [1015, 1016, 1018, 1019, 1021, 1025, 1035, 1039, 1040];
@@ -44,7 +44,7 @@
         gallery.appendChild(a);
     });
 
-    Curtainbox.init({
+    VibeLightbox.init({
         labels: { dialog: 'Фото', close: 'Закрыть', prev: 'Предыдущее фото', next: 'Следующее фото', thumb: 'Фото {n}' },
         onClose: function (e) { console.log('closed on', e.group, e.index); }
     });

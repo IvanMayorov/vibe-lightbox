@@ -1,0 +1,114 @@
+/*!
+ * Vibe Lightbox — full-screen photo viewer. MIT License. https://github.com/IvanMayorov/curtainbox
+ * Colours, sizes and fonts are CSS variables on .vibe-lightbox — override them on .vibe-lightbox or :root.
+ */
+.vibe-lightbox {
+    --vibe-lightbox-z: 3000;
+    --vibe-lightbox-bg: #fff;           /* backdrop */
+    --vibe-lightbox-ink: #1d1d1f;       /* icons, active thumbnail frame, loading bar */
+    --vibe-lightbox-muted: #6e6e73;     /* counter */
+    --vibe-lightbox-faint: #c7c7cc;     /* disabled arrow */
+    --vibe-lightbox-btn-bg: #fff;
+    --vibe-lightbox-btn-hover-bg: #1d1d1f;
+    --vibe-lightbox-btn-hover-ink: #fff;
+    --vibe-lightbox-btn-size: 50px;
+    --vibe-lightbox-shadow: 0 2px 10px rgba(0, 0, 0, .1);
+    --vibe-lightbox-ring: 0 0 0 3px rgba(0, 113, 227, .45);
+    --vibe-lightbox-placeholder: #f2f2f2; /* skeleton and empty thumbnail */
+    --vibe-lightbox-radius: 6px;
+    --vibe-lightbox-thumb: 64px;
+    --vibe-lightbox-font: inherit;
+    --vibe-lightbox-font-size: 14px;
+    --vibe-lightbox-pad: 90px 96px 120px; /* room around the photo: top, sides, bottom (thumbnails) */
+
+    display: none; position: fixed; inset: 0; z-index: var(--vibe-lightbox-z);
+    font-family: var(--vibe-lightbox-font); -webkit-tap-highlight-color: transparent;
+}
+.vibe-lightbox.is-open { display: block; }
+html.vibe-lightbox-lock { overflow: hidden; }
+.vibe-lightbox__bg { position: absolute; inset: 0; background: var(--vibe-lightbox-bg); opacity: var(--vibe-lightbox-fade, 1); animation: vibe-lightbox-in .32s ease-out; }
+/* z-index: 0 — own stacking context: slides (z-index for the curtain) never rise above the buttons and thumbnails */
+.vibe-lightbox__stage { position: absolute; inset: 0; z-index: 0; overflow: hidden; touch-action: none; }
+.vibe-lightbox__track { position: relative; height: 100%; }
+/* Slides lie on top of each other (paging is a curtain wipe); the slide is the offsetParent the zoom is measured from */
+.vibe-lightbox__slide { position: absolute; inset: 0; visibility: hidden; display: flex; align-items: center; justify-content: center; height: 100%; padding: var(--vibe-lightbox-pad); box-sizing: border-box; }
+.vibe-lightbox_single .vibe-lightbox__slide { padding-bottom: 90px; }
+.vibe-lightbox__img { display: block; max-width: 100%; max-height: 100%; transform-origin: center; user-select: none; -webkit-user-select: none; -webkit-user-drag: none; }
+/* While the large photo of the current slide loads — a thin running bar at the top (after .3 s, so cached photos show none).
+   No thumbnail yet — a grey skeleton in place of the photo. */
+.vibe-lightbox.is-busy::after { content: ""; position: absolute; top: 0; left: 0; right: 0; z-index: 1; height: 2px; background: linear-gradient(90deg, transparent, var(--vibe-lightbox-ink), transparent) no-repeat; background-size: 30% 100%; animation: vibe-lightbox-busy 1.2s .3s linear infinite both; }
+@keyframes vibe-lightbox-busy {
+    from { background-position: -50% 0; }
+    to { background-position: 150% 0; }
+}
+.vibe-lightbox__slide.is-empty::before { content: ""; position: absolute; inset: 0; width: min(100% - 192px, 100dvh - 210px); aspect-ratio: 1; margin: auto; border-radius: var(--vibe-lightbox-radius); background: linear-gradient(90deg, var(--vibe-lightbox-placeholder) 25%, var(--vibe-lightbox-bg) 50%, var(--vibe-lightbox-placeholder) 75%) 0 0 / 200% 100%; animation: vibe-lightbox-skeleton 1.4s linear infinite; }
+.vibe-lightbox__slide.is-empty .vibe-lightbox__img { opacity: 0; }
+@keyframes vibe-lightbox-skeleton { to { background-position: -200% 0; } }
+/* Cursor: whole photo — magnifier (a click zooms in), zoomed — hand (can be dragged), while dragging — closed hand */
+.vibe-lightbox.is-zoomable .vibe-lightbox__img { cursor: zoom-in; }
+.vibe-lightbox.is-zoomed .vibe-lightbox__img { cursor: grab; }
+.vibe-lightbox.is-grabbing .vibe-lightbox__img { cursor: grabbing; }
+
+.vibe-lightbox__counter,
+.vibe-lightbox__btn,
+.vibe-lightbox__thumbs { animation: vibe-lightbox-in .32s ease-out; transition: opacity .25s; }
+.vibe-lightbox.is-closing .vibe-lightbox__bg,
+.vibe-lightbox.is-closing .vibe-lightbox__counter,
+.vibe-lightbox.is-closing .vibe-lightbox__btn,
+.vibe-lightbox.is-closing .vibe-lightbox__thumbs { opacity: 0; transition: opacity .32s; }
+
+.vibe-lightbox__counter { position: absolute; top: 20px; left: 24px; line-height: var(--vibe-lightbox-btn-size); color: var(--vibe-lightbox-muted); font-size: var(--vibe-lightbox-font-size); }
+
+.vibe-lightbox__btn { position: absolute; width: var(--vibe-lightbox-btn-size); height: var(--vibe-lightbox-btn-size); padding: 0; border: 0; border-radius: 50%; background: var(--vibe-lightbox-btn-bg); box-shadow: var(--vibe-lightbox-shadow); color: var(--vibe-lightbox-ink); cursor: pointer; transition: background-color .3s ease-in-out, color .3s ease-in-out, opacity .25s; }
+.vibe-lightbox__btn svg { position: absolute; left: 50%; top: 50%; width: 17px; height: 17px; transform: translate(-50%, -50%); pointer-events: none; }
+.vibe-lightbox__btn:focus-visible { box-shadow: var(--vibe-lightbox-ring); outline: none; }
+.vibe-lightbox__btn:disabled { color: var(--vibe-lightbox-faint); cursor: default; }
+@media (hover: hover) {
+    .vibe-lightbox__btn:not(:disabled):hover { background: var(--vibe-lightbox-btn-hover-bg); color: var(--vibe-lightbox-btn-hover-ink); }
+}
+.vibe-lightbox__btn_close { top: 20px; right: 20px; }
+.vibe-lightbox__btn_close svg { width: 22px; height: 22px; }
+.vibe-lightbox__btn_prev,
+.vibe-lightbox__btn_next { top: 50%; margin-top: calc(var(--vibe-lightbox-btn-size) / -2); }
+.vibe-lightbox__btn_prev { left: 20px; }
+.vibe-lightbox__btn_next { right: 20px; }
+.vibe-lightbox__btn_prev svg { transform: translate(-50%, -50%) rotate(180deg); }
+.vibe-lightbox_single .vibe-lightbox__btn_prev,
+.vibe-lightbox_single .vibe-lightbox__btn_next,
+.vibe-lightbox_single .vibe-lightbox__counter,
+.vibe-lightbox_single .vibe-lightbox__thumbs { display: none; }
+
+/* Thumbnails — a centred row at the bottom, the active one framed */
+.vibe-lightbox__thumbs { position: absolute; left: 0; right: 0; bottom: 24px; display: flex; gap: 8px; padding: 0 20px; overflow-x: auto; scrollbar-width: none; }
+.vibe-lightbox__thumbs::-webkit-scrollbar { display: none; }
+/* Centred, and scrolled from the start when they do not fit (justify-content: center would cut off the left ones) */
+.vibe-lightbox__thumb:first-child { margin-left: auto; }
+.vibe-lightbox__thumb:last-child { margin-right: auto; }
+.vibe-lightbox__thumb { flex: 0 0 var(--vibe-lightbox-thumb); height: var(--vibe-lightbox-thumb); padding: 0; border: 1px solid transparent; border-radius: var(--vibe-lightbox-radius); background: var(--vibe-lightbox-placeholder) center / cover no-repeat; opacity: .6; cursor: pointer; transition: opacity .2s, border-color .2s; }
+.vibe-lightbox__thumb.is-active { border-color: var(--vibe-lightbox-ink); opacity: 1; }
+.vibe-lightbox__thumb:focus-visible { box-shadow: var(--vibe-lightbox-ring); outline: none; }
+@media (hover: hover) {
+    .vibe-lightbox__thumb:hover { opacity: 1; }
+}
+
+@keyframes vibe-lightbox-in { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+    .vibe-lightbox.is-busy::after,
+    .vibe-lightbox__slide.is-empty::before,
+    .vibe-lightbox__bg,
+    .vibe-lightbox__counter,
+    .vibe-lightbox__btn,
+    .vibe-lightbox__thumbs { animation: none; }
+}
+
+/* Phone: photo full width, paged by swipe; no arrows, smaller thumbnails */
+@media screen and (max-width: 767px) {
+    .vibe-lightbox { --vibe-lightbox-btn-size: 44px; --vibe-lightbox-thumb: 52px; --vibe-lightbox-pad: 72px 0 100px; }
+    .vibe-lightbox_single .vibe-lightbox__slide { padding: 72px 0; }
+    .vibe-lightbox__slide.is-empty::before { width: min(100%, 100dvh - 172px); border-radius: 0; }
+    .vibe-lightbox__counter { top: 12px; left: 16px; }
+    .vibe-lightbox__btn_close { top: 12px; right: 12px; }
+    .vibe-lightbox__btn_prev,
+    .vibe-lightbox__btn_next { display: none; }
+    .vibe-lightbox__thumbs { bottom: max(16px, env(safe-area-inset-bottom)); gap: 6px; padding: 0 16px; }
+}
