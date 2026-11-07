@@ -9,6 +9,7 @@
  * - The photo grows out of the thumbnail and folds back into it; the thumbnail stays on screen until the large photo loads.
  * - Opens with a click or a two-finger spread on the thumbnail.
  * - Paging: arrows, ←/→ keys, swipe (the curtain follows the finger), thumbnails strip.
+ *   Or `paging: 'slide'` — photos slide side by side like a usual carousel, both following the finger.
  * - Zoom: click in steps ×2, ×4… up to natural size; double tap on touch; mouse wheel; pinch on touch screens and touchpads.
  *   A zoomed photo is dragged with inertia and springs back at the edges.
  * - Closing: close button, Esc, click on the backdrop, browser Back (the viewer has its own #group-N address),
@@ -25,6 +26,7 @@
 		attribute: 'data-lightbox', // links with this attribute open the viewer; its value is the group name
 		hash: true,                 // own address #group-N: browser Back closes the viewer, links with the hash open it
 		pinchOpen: true,            // two-finger spread on a thumbnail opens the viewer
+		paging: 'curtain',          // 'curtain' — curtain wipe; 'slide' — photos slide side by side like a usual carousel
 		labels: {
 			dialog: 'Photo viewer',
 			close: 'Close',
@@ -303,6 +305,9 @@
 	// Slides lie on top of each other, the current one is visible. Frame-by-frame animation (CSS transitions flickered in Safari).
 
 	var CURTAIN = still ? 0 : 800; // full change, ms
+	var SLIDE = still ? 0 : 380;   // full change in 'slide' paging, ms
+	var GAP = 16;                  // space between photos in 'slide' paging, px
+	function sliding() { return opts && opts.paging === 'slide'; }
 	var SHIFT = .17, DRIFT = .35;  // slide-in of the new photo and drift of the old one, shares of the photo width
 	var curtain = null, curtainAnim = 0; // { from, to, dir, p } — the running change and its progress 0…1
 
@@ -312,6 +317,7 @@
 	function curtainFrame(c, p) {
 		c.p = p;
 		var to = slides[c.to], from = slides[c.from];
+		if (sliding()) { slideFrame(c, p, from, to); return; }
 		// The curtain is a vertical line through the whole viewer height that travels across the photo width.
 		// On one side of it — the new photo, on the other — the old one, both cut by this line; nothing shows past the side
 		// edges of the frame. The frame width morphs from the old photo to the new one. Zoomed photos (paging with arrows
@@ -337,6 +343,19 @@
 		a.style.transform = 'translateX(' + -c.dir * (sa[1] - sa[0] || w) * DRIFT * p + 'px)' + zoomed(fz);
 	}
 
+	// 'slide' paging: the old photo moves out and the new one moves in next to it, both following the finger.
+	function slideFrame(c, p, from, to) {
+		function zoomed(z) { return !z || (z.scale === 1 && !z.x && !z.y) ? '' : 'translate(' + z.x + 'px, ' + z.y + 'px) scale(' + z.scale + ')'; }
+		var step = from.el.clientWidth + GAP;
+		to.el.style.visibility = 'visible';
+		to.el.style.zIndex = '2';
+		from.el.style.clipPath = to.el.style.clipPath = '';
+		from.el.style.transform = 'translateX(' + -c.dir * step * p + 'px)';
+		to.el.style.transform = 'translateX(' + c.dir * step * (1 - p) + 'px)';
+		from.img.style.transform = zoomed(c.fromZoom);
+		to.img.style.transform = zoomed(c.toZoom);
+	}
+
 	// All slides at rest: only the current one is visible.
 	function stack() {
 		cancelAnimationFrame(curtainAnim);
@@ -357,8 +376,9 @@
 	// Run the curtain to p = target, then call done.
 	function curtainTo(c, target, done) {
 		cancelAnimationFrame(curtainAnim);
-		var from = c.p, dur = Math.max(120, CURTAIN * Math.abs(target - from)), start = performance.now();
-		if (!CURTAIN) { curtainFrame(c, target); done(); return; }
+		var full = sliding() ? SLIDE : CURTAIN;
+		var from = c.p, dur = Math.max(120, full * Math.abs(target - from)), start = performance.now();
+		if (!full) { curtainFrame(c, target); done(); return; }
 		(function step(now) {
 			var k = Math.min(1, (now - start) / dur);
 			curtainFrame(c, from + (target - from) * easeOut(k));
@@ -405,7 +425,8 @@
 		}
 		if (curtain && curtain.to !== to) stack(); // the finger crossed to the other side
 		if (!curtain) curtain = { from: index, to: to, dir: dir, p: 0 };
-		curtainFrame(curtain, Math.min(1, Math.abs(dx) / (slides[curtain.to].img.offsetWidth || box.clientWidth)));
+		var span = sliding() ? box.clientWidth + GAP : (slides[curtain.to].img.offsetWidth || box.clientWidth);
+		curtainFrame(curtain, Math.min(1, Math.abs(dx) / span));
 	}
 
 	// Released before paging — the curtain rolls back, the slide returns to its place.
