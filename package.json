@@ -1,6 +1,6 @@
 {
   "name": "vibe-lightbox",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Full-screen photo viewer: grows out of the thumbnail, pages with a curtain wipe, zoom and pan with inertia, folds back on close. No dependencies.",
   "main": "vibe-lightbox.js",
   "style": "vibe-lightbox.css",
